@@ -48,19 +48,17 @@ local function onlynate(m, action)
         if m.action == ACT_IDLE then
             set_mario_action(m, ACT_NATE_IDLE, 0)
         end
-        if m.playerIndex ~= 0 then
-        else
-            if (NATE_ACT_ONLY[m.action] ~= true) and ((m.action & ACT_FLAG_CUSTOM_ACTION) == 0) and ((m.action & ACT_GROUP_CUTSCENE) == 0) and not _G.charSelect.is_menu_open() then
-                if ((m.action & ACT_FLAG_AIR) ~= 0) then
-                    --set_mario_action(m, ACT_NATE_AIR, 1)
-                    --djui_chat_message_create("set action to fall")
-                    --elseif ((m.action & ACT_FLAG_SWIMMING_OR_FLYING) ~= 0) then
-                    set_mario_action(m, ACT_NATE_AIR, 1)
-                elseif ((m.action & ACT_FLAG_AIR) == 0) then
-                    set_mario_action(m, ACT_NATE_AIR, 1)
-                elseif ((m.action & ACT_FLAG_IDLE) ~= 0) then
-                    set_mario_action(m, ACT_NATE_WALK, 0)
-                end
+
+        if (NATE_ACT_ONLY[m.action] ~= true) and ((m.action & ACT_FLAG_CUSTOM_ACTION) == 0) and ((m.action & ACT_GROUP_CUTSCENE) == 0) and not _G.charSelect.is_menu_open() then
+            if ((m.action & ACT_FLAG_AIR) ~= 0) then
+                --set_mario_action(m, ACT_NATE_AIR, 1)
+                --djui_chat_message_create("set action to fall")
+                --elseif ((m.action & ACT_FLAG_SWIMMING_OR_FLYING) ~= 0) then
+                set_mario_action(m, ACT_NATE_AIR, 1)
+            elseif ((m.action & ACT_FLAG_AIR) == 0) then
+                set_mario_action(m, ACT_NATE_AIR, 1)
+            elseif ((m.action & ACT_FLAG_IDLE) ~= 0) then
+                set_mario_action(m, ACT_NATE_WALK, 0)
             end
         end
     end
@@ -80,25 +78,23 @@ local function nate_sprites_update(m, action)
         else
             m.marioBodyState.grabPos = GRAB_POS_NULL
         end
-        if m.playerIndex ~= 0 then
-        else
-            if (SIT_ACTION[m.action] == true) then
-                sit()
-            end
-            if (Nate_actions[m.action] ~= true) and not (SIT_ACTION[m.action] == true) then
-                if ((m.action & ACT_FLAG_AIR) ~= 0) then
+
+        if (SIT_ACTION[m.action] == true) then
+            sit(m)
+        end
+        if (Nate_actions[m.action] ~= true) and not (SIT_ACTION[m.action] == true) then
+            if ((m.action & ACT_FLAG_AIR) ~= 0) then
+                run_anim_speed(m)
+            elseif ((m.action & ACT_FLAG_IDLE) ~= 0) then
+                idle(m)
+            else
+                if m.forwardVel ~= 0 then
+                    walk_anim_speed(m)
+                elseif m.forwardVel >= 35 then
                     run_anim_speed(m)
-                elseif ((m.action & ACT_FLAG_IDLE) ~= 0) then
-                    idle()
-                else
-                    if m.forwardVel ~= 0 then
-                        walk_anim_speed(m)
-                    elseif m.forwardVel >= 35 then
-                        run_anim_speed(m)
-                    end
-                    if m.forwardVel == 0 then
-                        idle()
-                    end
+                end
+                if m.forwardVel == 0 then
+                    idle(m)
                 end
             end
         end
