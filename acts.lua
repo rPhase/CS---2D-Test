@@ -9,6 +9,12 @@ for i = 0, (MAX_PLAYERS - 1) do
     NExtraStates[i] = {}
     local e = NExtraStates[i]
     e.current_wspeed = walk_speed
+    e.animtimer = 0
+    e.runanimtimer = 0
+    e.back = false
+    e.left = false
+    e.right = false
+    e.sprite = 0
 end
 
 function update_nate_speed(m)
@@ -24,9 +30,8 @@ _G.ACT_NATE_IDLE = allocate_mario_action(ACT_FLAG_IDLE | ACT_FLAG_ALLOW_FIRST_PE
     ACT_FLAG_CUSTOM_ACTION)
 
 local function act_nate_idle(m)
-    if m.playerIndex == 0 then
-        idle()
-    end
+    idle(m)
+
     if (m.controller.buttonPressed & A_BUTTON ~= 0) then
         set_mario_action(m, ACT_NATE_AIR, 0)
     end
@@ -63,9 +68,8 @@ local function act_nate_walk(m)
         end
 
         if (m.controller.buttonDown & B_BUTTON ~= 0) then
-            if m.playerIndex == 0 then
-                run_anim_speed()
-            end
+            run_anim_speed(m)
+
             s.current_wspeed = run_speed
             if m.forwardVel < s.current_wspeed then
                 m.forwardVel = m.forwardVel + 1
@@ -73,9 +77,8 @@ local function act_nate_walk(m)
                 m.forwardVel = m.forwardVel + 0
             end
         else
-            if m.playerIndex == 0 then
-                walk_anim_speed()
-            end
+            walk_anim_speed(m)
+
             s.current_wspeed = walk_speed
         end
     else
@@ -111,9 +114,8 @@ hook_mario_action(ACT_NATE_WALK, act_nate_walk)
 ACT_NATE_AIR = allocate_mario_action(ACT_FLAG_AIR| ACT_FLAG_MOVING |ACT_GROUP_AIRBORNE)
 
 local function act_nate_air(m)
-    if m.playerIndex == 0 then
-        run_anim_speed(m)
-    end
+    run_anim_speed(m)
+
     if m.actionArg <= 0 then
         m.vel.y = 30
         m.actionArg = m.actionArg + 1

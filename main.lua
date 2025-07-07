@@ -60,37 +60,36 @@ local function on_character_snore(m)
     if _G.charSelect.character_get_voice(m) == SMWVOICE then return _G.charSelect.voice.snore(m) end
 end
 --]]
-gPlayerSyncTable[0].back = false
-gPlayerSyncTable[0].left = false
-gPlayerSyncTable[0].right = false
+-- gPlayerSyncTable[0].back = false
+-- gPlayerSyncTable[0].left = false
+-- gPlayerSyncTable[0].right = false
 hook_event(HOOK_ON_MODS_LOADED, on_character_select_load)
 --hook_event(HOOK_CHARACTER_SOUND, on_character_sound)
 --hook_event(HOOK_MARIO_UPDATE, on_character_snore)
 local function nate_update(m)
-    local s = gPlayerSyncTable[m.playerIndex]
-    h = gMarioStates[m.playerIndex]
-    local get_angle = limit_angle(h.faceAngle.y - calculate_yaw(gLakituState.pos, gLakituState.focus))
+    -- local s = gPlayerSyncTable[m.playerIndex]
+    local s = NExtraStates[m.playerIndex]
+    local get_angle = limit_angle(m.faceAngle.y - calculate_yaw(gLakituState.pos, gLakituState.focus))
     if _G.charSelect.character_get_current_number(m.playerIndex) == CT_NATE then
         --m.marioObj.header.gfx.node.flags = GRAPH_RENDER_Z_BUFFER
         --djui_chat_message_create("angle = " .. (get_angle))
-        if m.playerIndex ~= 0 then
+
+        if between(get_angle, 9135, 22270) then
+            s.right = true
         else
-            if between(get_angle, 9135, 22270) then
-                s.right = true
-            else
-                s.right = false
-            end
-            if between(get_angle, -23950, -9230) then
-                s.left = true
-            else
-                s.left = false
-            end
-            if between(get_angle, -9230, 9135) then
-                s.back = true
-            else
-                s.back = false
-            end
+            s.right = false
         end
+        if between(get_angle, -23950, -9230) then
+            s.left = true
+        else
+            s.left = false
+        end
+        if between(get_angle, -9230, 9135) then
+            s.back = true
+        else
+            s.back = false
+        end
+
         --side 1 =   9135  _  22270
         --side 2 = -23950  _  -9230
     end
@@ -111,11 +110,10 @@ hook_event(HOOK_ON_SET_MARIO_ACTION, function(m)
     end
 end)
 --]]
-gPlayerSyncTable[0].sprite = 0
+-- gPlayerSyncTable[0].sprite = 0
 
-function idle()
-    local m = geo_get_mario_state()
-    local s = gPlayerSyncTable[m.playerIndex]
+function idle(m)
+    local s = NExtraStates[m.playerIndex]
     if s.back == true then
         s.sprite = 3
     elseif s.left == true then
@@ -127,9 +125,8 @@ function idle()
     end
 end
 
-function walk1()
-    local m = geo_get_mario_state()
-    local s = gPlayerSyncTable[m.playerIndex]
+function walk1(m)
+    local s = NExtraStates[m.playerIndex]
     if s.back == true then
         s.sprite = 4
     elseif s.left == true then
@@ -141,9 +138,8 @@ function walk1()
     end
 end
 
-function walk2()
-    local m = geo_get_mario_state()
-    local s = gPlayerSyncTable[m.playerIndex]
+function walk2(m)
+    local s = NExtraStates[m.playerIndex]
     if s.back == true then
         s.sprite = 5
     elseif s.left == true then
@@ -155,9 +151,8 @@ function walk2()
     end
 end
 
-function sit()
-    local m = geo_get_mario_state()
-    local s = gPlayerSyncTable[m.playerIndex]
+function sit(m)
+    local s = NExtraStates[m.playerIndex]
     if s.back == true then
         s.sprite = 13
     elseif s.left == true then
@@ -171,61 +166,50 @@ end
 
 function n_sprite(node, matStackIndex)
     local m = geo_get_mario_state()
-    local s = gPlayerSyncTable[m.playerIndex]
-    if m.playerIndex ~= 0 then return end
+    local s = NExtraStates[m.playerIndex]
     local asSwitchNode = cast_graph_node(node)
     asSwitchNode.selectedCase = s.sprite
-end
-
-NExtraStatesd = {}
-for i = 0, (MAX_PLAYERS - 1) do
-    NExtraStatesd[i] = {}
-    local e = NExtraStatesd[i]
-    e.animtimer = 0
-    e.runanimtimer = 0
 end
 
 local animspeed = 1
 local runanimspeed = 2
 
 
-function walk_anim_speed()
-    local m = geo_get_mario_state()
-    local s = NExtraStatesd[m.playerIndex]
+function walk_anim_speed(m)
+    local s = NExtraStates[m.playerIndex]
     s.animtimer = s.animtimer + animspeed
     if s.animtimer == 5 then
-        walk1()
+        walk1(m)
     end
     if s.animtimer == 10 then
-        idle()
+        idle(m)
     end
     if s.animtimer == 15 then
-        walk2()
+        walk2(m)
     end
     if s.animtimer == 20 then
-        idle()
+        idle(m)
     end
     if s.animtimer >= 20 then
         s.animtimer = 0
     end
 end
 
-function run_anim_speed()
-    local m = geo_get_mario_state()
-    local s = NExtraStatesd[m.playerIndex]
+function run_anim_speed(m)
+    local s = NExtraStates[m.playerIndex]
 
     s.runanimtimer = s.runanimtimer + runanimspeed
     if s.runanimtimer == 8 then
-        walk1()
+        walk1(m)
     end
     if s.runanimtimer == 14 then
-        idle()
+        idle(m)
     end
     if s.runanimtimer == 20 then
-        walk2()
+        walk2(m)
     end
     if s.runanimtimer == 26 then
-        idle()
+        idle(m)
     end
     if s.runanimtimer >= 26 then
         s.runanimtimer = 0
