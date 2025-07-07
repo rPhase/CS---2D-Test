@@ -12,7 +12,7 @@ for i = 0, (MAX_PLAYERS - 1) do
 end
 
 function update_nate_speed(m)
-local s = NExtraStates[m.playerIndex]
+    local s = NExtraStates[m.playerIndex]
     if m.forwardVel >= s.current_wspeed then
         m.forwardVel = s.current_wspeed
     end
@@ -20,10 +20,13 @@ local s = NExtraStates[m.playerIndex]
     apply_slope_accel(m);
 end
 
-_G.ACT_NATE_IDLE = allocate_mario_action(ACT_FLAG_STATIONARY | ACT_FLAG_IDLE | ACT_FLAG_CUSTOM_ACTION)
+_G.ACT_NATE_IDLE = allocate_mario_action(ACT_FLAG_IDLE | ACT_FLAG_ALLOW_FIRST_PERSON | ACT_FLAG_STATIONARY |
+    ACT_FLAG_CUSTOM_ACTION)
 
 local function act_nate_idle(m)
-    idle()
+    if m.playerIndex == 0 then
+        idle()
+    end
     if (m.controller.buttonPressed & A_BUTTON ~= 0) then
         set_mario_action(m, ACT_NATE_AIR, 0)
     end
@@ -38,6 +41,7 @@ local function act_nate_idle(m)
     if (perform_ground_step(m) == GROUND_STEP_LEFT_GROUND) then
         set_mario_action(m, ACT_NATE_AIR, 1)
     end
+    set_character_animation(m, CHAR_ANIM_A_POSE)
     stop_and_set_height_to_floor(m)
 end
 
@@ -49,7 +53,7 @@ _G.ACT_NATE_WALK = allocate_mario_action(ACT_GROUP_MOVING | ACT_FLAG_MOVING| ACT
 
 local function act_nate_walk(m)
     interact_w_door(m)
-local s = NExtraStates[m.playerIndex]
+    local s = NExtraStates[m.playerIndex]
     if (m.input & INPUT_NONZERO_ANALOG ~= 0) then
         --m.forwardVel = m.forwardVel + accel_speed
         if m.forwardVel < s.current_wspeed then
@@ -59,7 +63,9 @@ local s = NExtraStates[m.playerIndex]
         end
 
         if (m.controller.buttonDown & B_BUTTON ~= 0) then
-            run_anim_speed()
+            if m.playerIndex == 0 then
+                run_anim_speed()
+            end
             s.current_wspeed = run_speed
             if m.forwardVel < s.current_wspeed then
                 m.forwardVel = m.forwardVel + 1
@@ -67,7 +73,9 @@ local s = NExtraStates[m.playerIndex]
                 m.forwardVel = m.forwardVel + 0
             end
         else
-            walk_anim_speed()
+            if m.playerIndex == 0 then
+                walk_anim_speed()
+            end
             s.current_wspeed = walk_speed
         end
     else
@@ -93,6 +101,7 @@ local s = NExtraStates[m.playerIndex]
         set_mario_action(m, ACT_TURNING_AROUND, 0)
     end
 ]]
+    set_character_animation(m, CHAR_ANIM_A_POSE)
     update_nate_speed(m)
 end
 
@@ -102,11 +111,14 @@ hook_mario_action(ACT_NATE_WALK, act_nate_walk)
 ACT_NATE_AIR = allocate_mario_action(ACT_FLAG_AIR| ACT_FLAG_MOVING |ACT_GROUP_AIRBORNE)
 
 local function act_nate_air(m)
-    run_anim_speed(m)
+    if m.playerIndex == 0 then
+        run_anim_speed(m)
+    end
     if m.actionArg <= 0 then
         m.vel.y = 30
         m.actionArg = m.actionArg + 1
     end
+    set_character_animation(m, CHAR_ANIM_A_POSE)
     common_air_action_step2(m, ACT_NATE_WALK, CHAR_ANIM_A_POSE, AIR_STEP_NONE)
 end
 
